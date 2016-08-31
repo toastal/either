@@ -4,13 +4,6 @@ module Either exposing (..)
 A generic structure for a type with two possibilities: a `Left a` or
 a `Right b`.
 
-An `Either` is right-biased, so most operations will be applied to
-the `Right`.
-
-This is similar to `Result` type in `core`, but is more generic.
-If your looking for a data type to do error handling, you should
-use `Result` instead.
-
 
 # Definition
 @docs Either
@@ -19,10 +12,10 @@ use `Result` instead.
 @docs map, map2, map3, mapLeft, mapRight, mapBoth, mapDefault
 
 # Singleton & Applying
-@docs singleton, andMap
+@docs singleton, andMap, andMapLeft, andMapRight
 
 # Chaining
-@docs andThen
+@docs andThen, andThenLeft, andThenRight
 
 # List Helpers
 @docs lefts, rights, partition
@@ -135,8 +128,8 @@ mapRight =
 {-| Apply the first argument function to a `Left` and the second
 argument function to a `Right` of an `Either`.
 
-    mapBoth (flip (++) "!") ((+) 1) <| Left "Hello" == Left "Hello!"
-    mapBoth (flip (++) "!") ((+) 1) <| Right 2 == Right 3
+    mapBoth (flip (++) "!!") ((+) 1) <| Left "Hello" == Left "Hello!!"
+    mapBoth (flip (++) "!!") ((+) 1) <| Right 2 == Right 3
 -}
 mapBoth : (a -> b) -> (c -> d) -> Either a c -> Either b d
 mapBoth f g e =
@@ -197,6 +190,32 @@ andMap e e' =
             map f r
 
 
+{-| Apply the function that is inside `Either` to a value that is inside
+`Either`. Return the result inside `Either`. If one of the `Either`
+arguments is `Right x`, return `Right x`. Also known as `apply`.
+
+    Left (flip (++) "!!" ) `andMap` Left "Hello" == Left "Hello!!"
+    Left (flip (++) "!!" ) `andMap` Right 2 == Right 2
+    Right 99 `andMap` Left "World" == Right 99
+    Right 99 `andMap` Right 2 == Right 99
+-}
+andMapLeft : Either (a -> b) x -> Either a x -> Either b x
+andMapLeft e e' =
+    case ( e, e' ) of
+        ( Right x, _ ) ->
+            Right x
+
+        ( Left f, l ) ->
+            mapLeft f l
+
+
+{-| Alias for `andMap`.
+-}
+andMapRight : Either x (a -> b) -> Either x a -> Either x b
+andMapRight =
+    andMap
+
+
 
 -- MONAD
 
@@ -215,6 +234,29 @@ andThen e f =
 
         Left a ->
             Left a
+
+
+{-| Chain together in many computations that will stop computing if
+a chain is on a `Right`. Also known as `bind`.
+
+    Left "Hello" `andThen` (flip (++) "!!" >> Left) == Left "Hello!!"
+    Right 2 `andThen` (flip (++) "!!" >> Left) == Right 2
+-}
+andThenLeft : Either a x -> (a -> Either b x) -> Either b x
+andThenLeft e f =
+    case e of
+        Left a ->
+            f a
+
+        Right b ->
+            Right b
+
+
+{-| Alias for `andThen`.
+-}
+andThenRight : Either x a -> (a -> Either x b) -> Either x b
+andThenRight =
+    andThen
 
 
 
@@ -456,7 +498,7 @@ fromRight d e =
             d
 
 
-{-| Alias for `fromRight`
+{-| Alias for `fromRight`.
 -}
 withDefault : b -> Either a b -> b
 withDefault =
