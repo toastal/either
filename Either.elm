@@ -74,7 +74,7 @@ map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
 map2 f e e' =
     case ( e, e' ) of
         ( Right a, Right b ) ->
-            Right (f a b)
+            Right <| f a b
 
         ( Left x, _ ) ->
             Left x
