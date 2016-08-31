@@ -34,7 +34,7 @@ use `Result` instead.
 @docs toResult, fromResult
 
 # Rest of the Helpers
-@docs isLeft, isRight, fromLeft, fromRight, withDefault, elim, swap
+@docs isLeft, isRight, fromLeft, fromRight, withDefault, elim, either, swap
 -}
 
 import Result exposing (Result(Err, Ok))
@@ -376,6 +376,13 @@ elim f g e =
 
         Right b ->
             g b
+
+
+{-| Alias for `elim`.
+-}
+either : (a -> c) -> (b -> c) -> Either a b -> c
+either =
+    elim
 
 
 {-| Swap the `Left` and `Right` sides of an `Either`.
