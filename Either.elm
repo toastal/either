@@ -266,7 +266,7 @@ toMaybe =
 
 
 {-| Convert from a `Maybe` to `Either` with a default value
-for `Nothing`.
+for `Left` for `Nothing`.
 -}
 fromMaybe : a -> Maybe b -> Either a b
 fromMaybe d m =
@@ -276,6 +276,14 @@ fromMaybe d m =
 
         Nothing ->
             Left d
+
+
+{-| Convert from a `Maybe` to `Either` with a default value
+for `Right` for `Nothing`.
+-}
+leftFromMaybe : b -> Maybe a -> Either a b
+leftFromMaybe =
+    swap << fromMaybe
 
 
 
