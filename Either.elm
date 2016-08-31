@@ -16,7 +16,7 @@ use `Result` instead.
 @docs Either
 
 # Mapping
-@docs map, map2, map3, mapLeft, mapRight, mapBoth
+@docs map, map2, map3, mapLeft, mapRight, mapBoth, mapDefault
 
 # Singleton & Applying
 @docs singleton, andMap
@@ -28,7 +28,7 @@ use `Result` instead.
 @docs lefts, rights, partition
 
 # Maybe Helpers
-@docs leftToMaybe, rightToMaybe, toMaybe, fromMaybe, leftFromMaybe
+@docs toMaybe, leftToMaybe, rightToMaybe, fromMaybe, leftFromMaybe, rightFromMaybe
 
 # Result Helpers
 @docs toResult, fromResult
@@ -43,6 +43,7 @@ import Result exposing (Result(Err, Ok))
 -- TYPE
 
 
+{-| -}
 type Either a b
     = Left a
     | Right b
@@ -53,7 +54,7 @@ type Either a b
 
 
 {-| Apply a function to an `Either`. If the argument is `Right`, it
-will be converted.  If the argmetn is an `Left`, the same left value
+will be converted.  If the argument is an `Left`, the same left value
 will propogate through.
 -}
 map : (a -> b) -> Either x a -> Either x b
@@ -131,6 +132,19 @@ mapBoth f g e =
 
         Right b ->
             Right <| g b
+
+
+{-| Apply a function to `Right` value. If argument was a `Left` use the
+default value. Equivalent to `Either.map >> Either.fromRight`.
+-}
+mapDefault : c -> (b -> c) -> Either x b -> c
+mapDefault d f e =
+    case e of
+        Right b ->
+            f b
+
+        _ ->
+            d
 
 
 
@@ -227,11 +241,24 @@ partition =
                 Right b ->
                     ( ls, b :: rs )
     in
-        List.foldr fun ( [], [] )
+        List.foldr fun
+            ( [], [] )
 
 
 
 -- MAYBE HELPERS
+
+
+{-| `Maybe` get the `Right` side of an `Either`.
+-}
+toMaybe : Either x b -> Maybe b
+toMaybe e =
+    case e of
+        Right b ->
+            Just b
+
+        _ ->
+            Nothing
 
 
 {-| `Maybe` get the `Left` side of an `Either`.
@@ -246,23 +273,11 @@ leftToMaybe e =
             Nothing
 
 
-{-| `Maybe` get the `Right` side of an `Either`.
+{-| Alias for `toMaybe`.
 -}
 rightToMaybe : Either x b -> Maybe b
-rightToMaybe e =
-    case e of
-        Right x ->
-            Just x
-
-        _ ->
-            Nothing
-
-
-{-| Alias for `rightToMaybe`.
--}
-toMaybe : Either x a -> Maybe a
-toMaybe =
-    rightToMaybe
+rightToMaybe =
+    toMaybe
 
 
 {-| Convert from a `Maybe` to `Either` with a default value
@@ -282,8 +297,20 @@ fromMaybe d m =
 for `Right` for `Nothing`.
 -}
 leftFromMaybe : b -> Maybe a -> Either a b
-leftFromMaybe =
-    swap << fromMaybe
+leftFromMaybe d m =
+    case m of
+        Just v ->
+            Left v
+
+        Nothing ->
+            Right d
+
+
+{-| Alias for `fromMaybe`.
+-}
+rightFromMaybe : a -> Maybe b -> Either a b
+rightFromMaybe =
+    fromMaybe
 
 
 
