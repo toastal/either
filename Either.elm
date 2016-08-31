@@ -28,7 +28,7 @@ use `Result` instead.
 @docs lefts, rights, partition
 
 # Maybe Helpers
-@docs leftToMaybe, rightToMaybe, toMaybe, fromMaybe
+@docs leftToMaybe, rightToMaybe, toMaybe, fromMaybe, leftFromMaybe
 
 # Result Helpers
 @docs toResult, fromResult
