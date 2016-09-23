@@ -8,13 +8,17 @@ a `Right b`.
 # Definition
 @docs Either
 
-# Mapping
-@docs map, map2, map3, mapLeft, mapRight, mapBoth, mapDefault
+# Mapping (Functor)
+@docs map, map2, map3, map4, mapLeft, mapRight, mapBoth
 
-# Singleton & Applying
+# Applying (Applicative)
 @docs singleton, andMap, andMapLeft, andMapRight
 
-# Chaining
+
+# Folding (Foldable)
+@docs length, foldr
+
+# Chaining (Monad)
 @docs andThen, andThenLeft, andThenRight
 
 # List Helpers
@@ -27,7 +31,7 @@ a `Right b`.
 @docs toResult, fromResult
 
 # Rest of the Helpers
-@docs isLeft, isRight, fromLeft, fromRight, withDefault, elim, either, swap
+@docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
 -}
 
 import Result exposing (Result(Err, Ok))
@@ -103,6 +107,27 @@ map3 f e e' e'' =
             Left x
 
 
+{-| Like `map2`, but with 4 eithers. Also known as `liftA4`
+-}
+map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
+map4 f e e' e'' e''' =
+    case ( e, e', e'', e''' ) of
+        ( Right a, Right b, Right c, Right d ) ->
+            Right <| f a b c d
+
+        ( Left x, _, _, _ ) ->
+            Left x
+
+        ( _, Left x, _, _ ) ->
+            Left x
+
+        ( _, _, Left x, _ ) ->
+            Left x
+
+        ( _, _, _, Left x ) ->
+            Left x
+
+
 {-| Apply a function to the `Left` of an `Either`.
 
     mapLeft ((+) 1) <| Left 2 == Left 3
@@ -141,20 +166,46 @@ mapBoth f g e =
             Right <| g b
 
 
-{-| Apply a function to `Right` value. If argument was a `Left` use the
-default value. Equivalent to `Either.map >> Either.fromRight`.
 
-    mapDefault 99 ((+) 1) <| Left "Hello" == 99
-    mapDefault 99 ((+) 1) <| Right 2 == 3
+-- FOLDABLE
+
+
+{-| Returns the length of an `Either`. This happens to be `0` for a
+`Left` and `1` for a `Right`.
+
+    length <| Left 2 == 0
+    length <| Right "Sharks" == 1
 -}
-mapDefault : c -> (b -> c) -> Either x b -> c
-mapDefault d f e =
+length : Either a b -> Int
+length e =
     case e of
-        Right b ->
-            f b
+        Left _ ->
+            0
 
         _ ->
-            d
+            1
+
+
+
+-- foldl requires that the return be a Monoid
+-- which I can't do without typeclasses
+
+
+{-| Folds an `Either` over a function with an accumulator. If
+it is a `Right` the function is applied with the accumulator.
+If it is a `Left` only the accumulator is returned.
+
+    foldr (*) 2 <| Left 3 == 2
+    foldr (*) 2 <| Right 3 == 6
+-}
+foldr : (a -> b -> b) -> b -> Either a a -> b
+foldr f acc e =
+    case e of
+        Left _ ->
+            acc
+
+        Right x ->
+            f x acc
 
 
 
@@ -162,7 +213,8 @@ mapDefault d f e =
 
 
 {-| Create a `singleton` from a value to an `Either` with a `Right`
-of the same type.  Also known as `pure`.
+of the same type.  Also known as `pure`. Use the `Left` constructor
+for a singleton of the `Left` variety.
 
     singleton 2 == Right 2
 -}
@@ -508,11 +560,11 @@ withDefault =
 {-| Given a function for both `Left` and `Right` to to type a generic
 type `c`, collapse down the `Either` to a value of that type.
 
-    elim identity toString <| Left "World" == "World"
-    elim identity toString <| Right 2 == "2"
+    unpack identity toString <| Left "World" == "World"
+    unpack identity toString <| Right 2 == "2"
 -}
-elim : (a -> c) -> (b -> c) -> Either a b -> c
-elim f g e =
+unpack : (a -> c) -> (b -> c) -> Either a b -> c
+unpack f g e =
     case e of
         Left a ->
             f a
@@ -521,11 +573,20 @@ elim f g e =
             g b
 
 
-{-| Alias for `elim`.
+{-| Apply a function to `Right` value. If argument was a `Left` use the
+default value. Equivalent to `Either.map >> Either.fromRight`.
+
+    unwrap 99 ((+) 1) <| Left "Hello" == 99
+    unwrap 99 ((+) 1) <| Right 2 == 3
 -}
-either : (a -> c) -> (b -> c) -> Either a b -> c
-either =
-    elim
+unwrap : c -> (b -> c) -> Either x b -> c
+unwrap d f e =
+    case e of
+        Right b ->
+            f b
+
+        _ ->
+            d
 
 
 {-| Swap the `Left` and `Right` sides of an `Either`.
