@@ -55,7 +55,7 @@ will be converted.  If the argument is an `Left`, the same left value
 will propogate through.
 
     map ((+) 1) <| Left "Hello" == Left "Hello"
-    map ((+) 1) <| Right 2 == Right 3
+    map ((+) 1) <| Right 2      == Right 3
 -}
 map : (a -> b) -> Either x a -> Either x b
 map f e =
@@ -72,13 +72,13 @@ If not, the first argument which is a `Left` will propagate through.
 Also known as `liftA2`.
 
     map2 (+) (Left "Hello") <| Left "World" == Left "Hello"
-    map2 (+) (Left "Hello") <| Right 3 == Left "Hello"
-    map2 (+) (Right 2) <| Left "World" == Left "World"
-    map2 (+) (Right 2) <| Right 3 == Right 5
+    map2 (+) (Left "Hello") <| Right 3      == Left "Hello"
+    map2 (+) (Right 2) <| Left "World"      == Left "World"
+    map2 (+) (Right 2) <| Right 3           == Right 5
 -}
 map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
-map2 f e e' =
-    case ( e, e' ) of
+map2 f e e1 =
+    case ( e, e1 ) of
         ( Right a, Right b ) ->
             Right <| f a b
 
@@ -92,8 +92,8 @@ map2 f e e' =
 {-| Like `map2`, but with 3 eithers. Also known as `liftA3`
 -}
 map3 : (a -> b -> c -> d) -> Either x a -> Either x b -> Either x c -> Either x d
-map3 f e e' e'' =
-    case ( e, e', e'' ) of
+map3 f e e1 e2 =
+    case ( e, e1, e2 ) of
         ( Right a, Right b, Right c ) ->
             Right <| f a b c
 
@@ -110,8 +110,8 @@ map3 f e e' e'' =
 {-| Like `map2`, but with 4 eithers. Also known as `liftA4`
 -}
 map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
-map4 f e e' e'' e''' =
-    case ( e, e', e'', e''' ) of
+map4 f e e1 e2 e3 =
+    case ( e, e1, e2, e3 ) of
         ( Right a, Right b, Right c, Right d ) ->
             Right <| f a b c d
 
@@ -130,7 +130,7 @@ map4 f e e' e'' e''' =
 
 {-| Apply a function to the `Left` of an `Either`.
 
-    mapLeft ((+) 1) <| Left 2 == Left 3
+    mapLeft ((+) 1) <| Left 2  == Left 3
     mapLeft ((+) 1) <| Right 2 == Right 2
 -}
 mapLeft : (a -> b) -> Either a x -> Either b x
@@ -154,7 +154,7 @@ mapRight =
 argument function to a `Right` of an `Either`.
 
     mapBoth (flip (++) "!!") ((+) 1) <| Left "Hello" == Left "Hello!!"
-    mapBoth (flip (++) "!!") ((+) 1) <| Right 2 == Right 3
+    mapBoth (flip (++) "!!") ((+) 1) <| Right 2      == Right 3
 -}
 mapBoth : (a -> b) -> (c -> d) -> Either a c -> Either b d
 mapBoth f g e =
@@ -173,7 +173,7 @@ mapBoth f g e =
 {-| Returns the length of an `Either`. This happens to be `0` for a
 `Left` and `1` for a `Right`.
 
-    length <| Left 2 == 0
+    length <| Left 2         == 0
     length <| Right "Sharks" == 1
 -}
 length : Either a b -> Int
@@ -195,7 +195,7 @@ length e =
 it is a `Right` the function is applied with the accumulator.
 If it is a `Left` only the accumulator is returned.
 
-    foldr (*) 2 <| Left 3 == 2
+    foldr (*) 2 <| Left 3  == 2
     foldr (*) 2 <| Right 3 == 6
 -}
 foldr : (a -> b -> b) -> b -> Either a a -> b
@@ -227,18 +227,18 @@ singleton =
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Left x`, return `Left x`. Also known as `apply`.
 
-    Left "Hello" `andMap` Left "World" == Left "Hello"
-    Left "Hello" `andMap` Right 2 == Left "Hello"
-    Right ((+) 1) `andMap` Left "World" == Left "World"
-    Right ((+) 1) `andMap` Right 2 == Right 3
+    Left "Hello" |> andMap (Left "World")  == Left "Hello"
+    Left "Hello" |> andMap (Right 2)       == Left "Hello"
+    Right ((+) 1) |> andMap (Left "World") == Left "World"
+    Right ((+) 1) |> andMap (Right 2)      == Right 3
 -}
-andMap : Either x (a -> b) -> Either x a -> Either x b
-andMap e e' =
-    case ( e, e' ) of
-        ( Left x, _ ) ->
+andMap : Either x a -> Either x (a -> b) -> Either x b
+andMap e e1 =
+    case ( e, e1 ) of
+        ( _, Left x ) ->
             Left x
 
-        ( Right f, r ) ->
+        ( r, Right f ) ->
             map f r
 
 
@@ -246,24 +246,24 @@ andMap e e' =
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Right x`, return `Right x`. Also known as `apply`.
 
-    Left (flip (++) "!!" ) `andMap` Left "Hello" == Left "Hello!!"
-    Left (flip (++) "!!" ) `andMap` Right 2 == Right 2
-    Right 99 `andMap` Left "World" == Right 99
-    Right 99 `andMap` Right 2 == Right 99
+    Left (flip (++) "!!" ) |> andMap Left "Hello" == Left "Hello!!"
+    Left (flip (++) "!!" ) |> andMap Right 2      == Right 2
+    Right 99 |> andMap (Left "World")             == Right 99
+    Right 99 |> andMap (Right 2)                  == Right 99
 -}
-andMapLeft : Either (a -> b) x -> Either a x -> Either b x
-andMapLeft e e' =
-    case ( e, e' ) of
-        ( Right x, _ ) ->
+andMapLeft : Either a x -> Either (a -> b) x -> Either b x
+andMapLeft e e1 =
+    case ( e, e1 ) of
+        ( _, Right x ) ->
             Right x
 
-        ( Left f, l ) ->
+        ( l, Left f ) ->
             mapLeft f l
 
 
 {-| Alias for `andMap`.
 -}
-andMapRight : Either x (a -> b) -> Either x a -> Either x b
+andMapRight : Either x a -> Either x (a -> b) -> Either x b
 andMapRight =
     andMap
 
@@ -275,11 +275,11 @@ andMapRight =
 {-| Chain together in many computations that will stop computing if
 a chain is on a `Left`. Also known as `bind`.
 
-    Left "Hello" `andThen` ((+) 1 >> Right) == Left "Hello"
-    Right 2 `andThen` ((+) 1 >> Right) == Right 3
+    Left "Hello" |> andThen ((+) 1 >> Right) == Left "Hello"
+    Right 2 |> andThen ((+) 1 >> Right)      == Right 3
 -}
-andThen : Either x a -> (a -> Either x b) -> Either x b
-andThen e f =
+andThen : (a -> Either x b) -> Either x a -> Either x b
+andThen f e =
     case e of
         Right b ->
             f b
@@ -291,11 +291,11 @@ andThen e f =
 {-| Chain together in many computations that will stop computing if
 a chain is on a `Right`. Also known as `bind`.
 
-    Left "Hello" `andThen` (flip (++) "!!" >> Left) == Left "Hello!!"
-    Right 2 `andThen` (flip (++) "!!" >> Left) == Right 2
+    Left "Hello" |> andThen (flip (++) "!!" >> Left) == Left "Hello!!"
+    Right 2 |> andThen (flip (++) "!!" >> Left)      == Right 2
 -}
-andThenLeft : Either a x -> (a -> Either b x) -> Either b x
-andThenLeft e f =
+andThenLeft : (a -> Either b x) -> Either a x -> Either b x
+andThenLeft f e =
     case e of
         Left a ->
             f a
@@ -306,7 +306,7 @@ andThenLeft e f =
 
 {-| Alias for `andThen`.
 -}
-andThenRight : Either x a -> (a -> Either x b) -> Either x b
+andThenRight : (a -> Either x b) -> Either x a -> Either x b
 andThenRight =
     andThen
 
@@ -379,7 +379,7 @@ partition =
 {-| `Maybe` get the `Right` side of an `Either`.
 
     toMaybe <| Left "World" == Nothing
-    toMaybe <| Right 2 == Just 2
+    toMaybe <| Right 2      == Just 2
 -}
 toMaybe : Either x b -> Maybe b
 toMaybe e =
@@ -417,7 +417,7 @@ rightToMaybe =
 for `Left` for `Nothing`.
 
     fromMaybe "Hello" <| Just 2 == Right 2
-    fromMaybe "Hello" Nothing == Left "Hello"
+    fromMaybe "Hello" Nothing   == Left "Hello"
 -}
 fromMaybe : a -> Maybe b -> Either a b
 fromMaybe d m =
@@ -433,7 +433,7 @@ fromMaybe d m =
 for `Right` for `Nothing`.
 
     leftFromMaybe 3 <| Just "World" == Left "World"
-    leftFromMaybe 3 Nothing == Right 3
+    leftFromMaybe 3 Nothing         == Right 3
 -}
 leftFromMaybe : b -> Maybe a -> Either a b
 leftFromMaybe d m =
@@ -459,7 +459,7 @@ rightFromMaybe =
 {-| Convert from `Either` to `Result`.
 
     toResult <| Left "World" == Err "World"
-    toResult <| Right 2 == Ok 2
+    toResult <| Right 2      == Ok 2
 -}
 toResult : Either a b -> Result a b
 toResult e =
@@ -474,7 +474,7 @@ toResult e =
 {-| Convert from `Result` to `Either`.
 
     fromResult <| Err "World" == Left "World"
-    fromResult <| Ok 2 == Right 2
+    fromResult <| Ok 2        == Right 2
 -}
 fromResult : Result a b -> Either a b
 fromResult r =
@@ -493,7 +493,7 @@ fromResult r =
 {-| Returns `True` if argument is `Left _`
 
     isLeft <| Left "World" == True
-    isLeft <| Right 2 == False
+    isLeft <| Right 2      == False
 -}
 isLeft : Either a b -> Bool
 isLeft e =
@@ -508,7 +508,7 @@ isLeft e =
 {-| Returns `True` if argument is `Right _`
 
     isRight <| Left "World" == False
-    isRight <| Right 2 == True
+    isRight <| Right 2      == True
 -}
 isRight : Either a b -> Bool
 isRight e =
@@ -523,7 +523,7 @@ isRight e =
 {-| Extract left value or a default.
 
     fromLeft "World" <| Left "Hello" == "Hello"
-    fromLeft "World" <| Right 2 == "World"
+    fromLeft "World" <| Right 2      == "World"
 -}
 fromLeft : a -> Either a b -> a
 fromLeft d e =
@@ -538,7 +538,7 @@ fromLeft d e =
 {-| Extract right value or a default.
 
     fromRight 3 <| Left "Hello" == 3
-    fromRight 3 <| Right 2 == 2
+    fromRight 3 <| Right 2      == 2
 -}
 fromRight : b -> Either a b -> b
 fromRight d e =
@@ -561,7 +561,7 @@ withDefault =
 type `c`, collapse down the `Either` to a value of that type.
 
     unpack identity toString <| Left "World" == "World"
-    unpack identity toString <| Right 2 == "2"
+    unpack identity toString <| Right 2      == "2"
 -}
 unpack : (a -> c) -> (b -> c) -> Either a b -> c
 unpack f g e =
@@ -577,7 +577,7 @@ unpack f g e =
 default value. Equivalent to `Either.map >> Either.fromRight`.
 
     unwrap 99 ((+) 1) <| Left "Hello" == 99
-    unwrap 99 ((+) 1) <| Right 2 == 3
+    unwrap 99 ((+) 1) <| Right 2      == 3
 -}
 unwrap : c -> (b -> c) -> Either x b -> c
 unwrap d f e =
@@ -592,7 +592,7 @@ unwrap d f e =
 {-| Swap the `Left` and `Right` sides of an `Either`.
 
     swap <| Left "World" == Right "World"
-    swap <| Right 2 == Left 2
+    swap <| Right 2      == Left 2
 -}
 swap : Either a b -> Either b a
 swap e =
