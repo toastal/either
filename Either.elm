@@ -5,6 +5,7 @@ module Either
         , mapLeft
         , mapRight
         , mapBoth
+        , mapEach
         , singleton
         , andMap
         , andMapLeft
@@ -13,6 +14,7 @@ module Either
         , map3
         , map4
         , length
+        , foldl
         , foldr
         , andThen
         , andThenLeft
@@ -46,17 +48,14 @@ a `Right b`.
 # Definition
 @docs Either
 
-# Mapping (Functor)
-@docs map, mapLeft, mapRight
-
-# Mapping Both Sides (Bifunctor)
-@docs mapBoth
+# Mapping (Functor & Bifunctor)
+@docs map, mapBoth, mapLeft, mapRight, mapPair
 
 # Applying (Applicative)
 @docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
 
 # Folding (Foldable)
-@docs length, foldr
+@docs length, foldl, foldr
 
 # Chaining (Monad)
 @docs andThen, andThenLeft, andThenRight
@@ -74,7 +73,7 @@ a `Right b`.
 @docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
 -}
 
--- TYPE
+-- TYPE DEFINITION --
 
 
 {-| The only implementation
@@ -85,7 +84,8 @@ type Either a b
 
 
 
--- FUNCTOR
+-- TYPE CLASSES --
+-- FUNCTOR & BIFUNCTOR
 
 
 {-| Apply a function to an `Either`. If the argument is `Right`, it
@@ -103,72 +103,6 @@ map f e =
 
         Left a ->
             Left a
-
-
-{-| Apply a function to two eithers, if both arguments are `Right`.
-If not, the first argument which is a `Left` will propagate through.
-Also known as `liftA2`.
-
-    map2 (+) (Left "Hello") <| Left "World" == Left "Hello"
-    map2 (+) (Left "Hello") <| Right 3      == Left "Hello"
-    map2 (+) (Right 2) <| Left "World"      == Left "World"
-    map2 (+) (Right 2) <| Right 3           == Right 5
-
-
-It’s essentially a helper for (and why it’s under applicative)
-
-    singleton (+) |> andMap (Right 2) |> andMap (Right 3) == Right 5
--}
-map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
-map2 f e e1 =
-    case ( e, e1 ) of
-        ( Right a, Right b ) ->
-            Right <| f a b
-
-        ( Left x, _ ) ->
-            Left x
-
-        ( _, Left x ) ->
-            Left x
-
-
-{-| Like `map2`, but with 3 eithers. Also known as `liftA3`
--}
-map3 : (a -> b -> c -> d) -> Either x a -> Either x b -> Either x c -> Either x d
-map3 f e e1 e2 =
-    case ( e, e1, e2 ) of
-        ( Right a, Right b, Right c ) ->
-            Right <| f a b c
-
-        ( Left x, _, _ ) ->
-            Left x
-
-        ( _, Left x, _ ) ->
-            Left x
-
-        ( _, _, Left x ) ->
-            Left x
-
-
-{-| Like `map2`, but with 4 eithers. Also known as `liftA4`
--}
-map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
-map4 f e e1 e2 e3 =
-    case ( e, e1, e2, e3 ) of
-        ( Right a, Right b, Right c, Right d ) ->
-            Right <| f a b c d
-
-        ( Left x, _, _, _ ) ->
-            Left x
-
-        ( _, Left x, _, _ ) ->
-            Left x
-
-        ( _, _, Left x, _ ) ->
-            Left x
-
-        ( _, _, _, Left x ) ->
-            Left x
 
 
 {-| Apply a function to the `Left` of an `Either`.
@@ -209,6 +143,22 @@ mapBoth f g e =
             Right <| g b
 
 
+{-| Not crazy on the name, but apply a function to either the `Left`
+or the `Right` where the `Left` and the `Right` are of the same type.
+
+    mapBoth ((+) 1) <| Left 2  == Left 3
+    mapBoth ((+) 1) <| Right 3 == Right 4
+-}
+mapEach : (a -> b) -> Either a a -> Either b b
+mapEach f e =
+    case e of
+        Left a ->
+            Left <| f a
+
+        Right b ->
+            Right <| f b
+
+
 
 -- FOLDABLE
 
@@ -230,8 +180,25 @@ length e =
 
 
 
--- foldl requires that the return be a Monoid
+-- foldl and foldr requires that the return be a Monoid
 -- which I can't do without typeclasses
+
+
+{-| Folds an `Either` over a function with an accumulator. If
+it is a `Left` the function is applied with the accumulator.
+If it is a `Right` only the accumulator is returned.
+
+    foldl (*) 2 <| Left 3  == 6
+    foldl (*) 2 <| Right 3 == 2
+-}
+foldl : (a -> b -> b) -> b -> Either a a -> b
+foldl f acc e =
+    case e of
+        Right _ ->
+            acc
+
+        Left x ->
+            f x acc
 
 
 {-| Folds an `Either` over a function with an accumulator. If
@@ -311,6 +278,72 @@ andMapRight =
     andMap
 
 
+{-| Apply a function to two eithers, if both arguments are `Right`.
+If not, the first argument which is a `Left` will propagate through.
+Also known as `liftA2`.
+
+    map2 (+) (Left "Hello") <| Left "World" == Left "Hello"
+    map2 (+) (Left "Hello") <| Right 3      == Left "Hello"
+    map2 (+) (Right 2) <| Left "World"      == Left "World"
+    map2 (+) (Right 2) <| Right 3           == Right 5
+
+
+It’s essentially a helper for (and why it’s under applicative)
+
+    singleton (+) |> andMap (Right 2) |> andMap (Right 3) == Right 5
+-}
+map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
+map2 f e e1 =
+    case ( e, e1 ) of
+        ( Right a, Right b ) ->
+            Right <| f a b
+
+        ( Left x, _ ) ->
+            Left x
+
+        ( _, Left x ) ->
+            Left x
+
+
+{-| Like `map2`, but with 3 eithers. Also known as `liftA3`
+-}
+map3 : (a -> b -> c -> d) -> Either x a -> Either x b -> Either x c -> Either x d
+map3 f e e1 e2 =
+    case ( e, e1, e2 ) of
+        ( Right a, Right b, Right c ) ->
+            Right <| f a b c
+
+        ( Left x, _, _ ) ->
+            Left x
+
+        ( _, Left x, _ ) ->
+            Left x
+
+        ( _, _, Left x ) ->
+            Left x
+
+
+{-| Like `map2`, but with 4 eithers. Also known as `liftA4`
+-}
+map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
+map4 f e e1 e2 e3 =
+    case ( e, e1, e2, e3 ) of
+        ( Right a, Right b, Right c, Right d ) ->
+            Right <| f a b c d
+
+        ( Left x, _, _, _ ) ->
+            Left x
+
+        ( _, Left x, _, _ ) ->
+            Left x
+
+        ( _, _, Left x, _ ) ->
+            Left x
+
+        ( _, _, _, Left x ) ->
+            Left x
+
+
 
 -- MONAD
 
@@ -355,7 +388,7 @@ andThenRight =
 
 
 
--- COMBINATORS
+-- COMBINATORS --
 -- LIST HELPERS
 
 
