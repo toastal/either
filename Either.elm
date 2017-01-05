@@ -1,4 +1,42 @@
-module Either exposing (..)
+module Either
+    exposing
+        ( Either(Left, Right)
+        , map
+        , mapLeft
+        , mapRight
+        , mapBoth
+        , singleton
+        , andMap
+        , andMapLeft
+        , andMapRight
+        , map2
+        , map3
+        , map4
+        , length
+        , foldr
+        , andThen
+        , andThenLeft
+        , andThenRight
+        , lefts
+        , rights
+        , partition
+        , toMaybe
+        , leftToMaybe
+        , rightToMaybe
+        , fromMaybe
+        , leftFromMaybe
+        , rightFromMaybe
+        , toResult
+        , fromResult
+        , isLeft
+        , isRight
+        , fromLeft
+        , fromRight
+        , withDefault
+        , unpack
+        , unwrap
+        , swap
+        )
 
 {-|
 A generic structure for a type with two possibilities: a `Left a` or
@@ -9,11 +47,13 @@ a `Right b`.
 @docs Either
 
 # Mapping (Functor)
-@docs map, map2, map3, map4, mapLeft, mapRight, mapBoth
+@docs map, mapLeft, mapRight
+
+# Mapping Both Sides (Bifunctor)
+@docs mapBoth
 
 # Applying (Applicative)
-@docs singleton, andMap, andMapLeft, andMapRight
-
+@docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
 
 # Folding (Foldable)
 @docs length, foldr
@@ -34,13 +74,11 @@ a `Right b`.
 @docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
 -}
 
-import Result exposing (Result(Err, Ok))
-
-
 -- TYPE
 
 
-{-| -}
+{-| The only implementation
+-}
 type Either a b
     = Left a
     | Right b
@@ -75,6 +113,11 @@ Also known as `liftA2`.
     map2 (+) (Left "Hello") <| Right 3      == Left "Hello"
     map2 (+) (Right 2) <| Left "World"      == Left "World"
     map2 (+) (Right 2) <| Right 3           == Right 5
+
+
+It’s essentially a helper for (and why it’s under applicative)
+
+    singleton (+) |> andMap (Right 2) |> andMap (Right 3) == Right 5
 -}
 map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
 map2 f e e1 =

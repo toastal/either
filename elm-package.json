@@ -1,5 +1,5 @@
 {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "summary": "A more complete Either for representing a structure with two types",
     "repository": "https://github.com/toastal/either.git",
     "license": "BSD3",
