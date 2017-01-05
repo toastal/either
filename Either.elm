@@ -49,7 +49,7 @@ a `Right b`.
 @docs Either
 
 # Mapping (Functor & Bifunctor)
-@docs map, mapBoth, mapLeft, mapRight, mapPair
+@docs map, mapBoth, mapLeft, mapRight, mapEach
 
 # Applying (Applicative)
 @docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
