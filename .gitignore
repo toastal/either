@@ -1,37 +1,26 @@
 # Elm
-#######
-
 /elm-stuff
 
 
 # Node
-#######
-
 node_modules/
+yarn.lock
 
 
 # Logs
-########
-
 /logs
 *.log
 
 
 # Editors
-##########
-
 *.sw[po]
 
 
 # Dist
-#######
-
 /dist
 
 
 # OS generated files
-######################
-
 .DS_Store
 .DS_Store?
 ._*

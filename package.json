@@ -1,0 +1,24 @@
+{
+  "name": "either",
+  "version": "3.1.0",
+  "description": "A more complete Either for representing a structure with two types",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "elm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toastal/either.git"
+  },
+  "author": "Kyle J. Kress @toastal",
+  "license": "BSD3",
+  "bugs": {
+    "url": "https://github.com/EntangledMedia/WebClient/issues"
+  },
+  "devDependencies": {
+    "elm": "^0.18.0",
+    "elm-test": "^0.18.2"
+  }
+}
