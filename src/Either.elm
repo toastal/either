@@ -194,11 +194,11 @@ If it is a `Right` only the accumulator is returned.
 foldl : (a -> b -> b) -> b -> Either a a -> b
 foldl f acc e =
     case e of
+        Right _ ->
+            acc
+
         Left x ->
             f x acc
-
-        _ ->
-            acc
 
 
 {-| Folds an `Either` over a function with an accumulator. If
@@ -211,11 +211,11 @@ If it is a `Left` only the accumulator is returned.
 foldr : (a -> b -> b) -> b -> Either a a -> b
 foldr f acc e =
     case e of
+        Left _ ->
+            acc
+
         Right x ->
             f x acc
-
-        _ ->
-            acc
 
 
 
@@ -256,10 +256,10 @@ andMap e e1 =
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Right x`, return `Right x`. Also known as `apply`.
 
-    Left (flip (++) "!!") |> andMap Left "Hello" == Left "Hello!!"
-    Left (flip (++) "!!") |> andMap Right 2      == Right 2
-    Right 99 |> andMap (Left "World")            == Right 99
-    Right 99 |> andMap (Right 2)                 == Right 99
+    Left (flip (++) "!!" ) |> andMap Left "Hello" == Left "Hello!!"
+    Left (flip (++) "!!" ) |> andMap Right 2      == Right 2
+    Right 99 |> andMap (Left "World")             == Right 99
+    Right 99 |> andMap (Right 2)                  == Right 99
 -}
 andMapLeft : Either a x -> Either (a -> b) x -> Either b x
 andMapLeft e e1 =
@@ -501,7 +501,7 @@ fromMaybe d m =
         Just v ->
             Right v
 
-        _ ->
+        Nothing ->
             Left d
 
 
@@ -517,7 +517,7 @@ leftFromMaybe d m =
         Just v ->
             Left v
 
-        _ ->
+        Nothing ->
             Right d
 
 
