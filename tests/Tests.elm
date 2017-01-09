@@ -16,13 +16,14 @@ either =
 all : Test
 all =
     describe "Testing Either"
-        [ functorBifunctor
+        [ functor
+        , applicative
         ]
 
 
-functorBifunctor : Test
-functorBifunctor =
-    describe "Functor & Bifunctor"
+functor : Test
+functor =
+    describe "Functor"
         [ test "Functor Law I: map identity = identity" <|
             \() ->
                 let
@@ -54,4 +55,48 @@ functorBifunctor =
                         (*) z
                 in
                     Expect.equal True <| map (g << f) e == (map g << map f) e
+        , fuzz3 Fuzz.int
+            Fuzz.int
+            Fuzz.int
+            "Companion to Law II"
+          <|
+            \x y z ->
+                let
+                    e =
+                        Left x
+
+                    f =
+                        (+) y
+
+                    g =
+                        (*) z
+                in
+                    Expect.equal True
+                        (mapLeft (g << f) e == (mapLeft g << mapLeft f) e)
+        ]
+
+
+applicative : Test
+applicative =
+    describe "Applicative"
+        [ test "Identity law: singleton identity |> andMap v == v" <|
+            \() ->
+                let
+                    e =
+                        Right ()
+                in
+                    singleton identity
+                        |> andMap e
+                        |> (==) e
+                        |> Expect.equal True
+        , test "Companion to Identity law" <|
+            \() ->
+                let
+                    e =
+                        Left ()
+                in
+                    Left identity
+                        |> andMapLeft e
+                        |> (==) e
+                        |> Expect.equal True
         ]
