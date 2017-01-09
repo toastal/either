@@ -30,14 +30,16 @@ functor =
                     e =
                         singleton ()
                 in
-                    Expect.equal True <| map identity e == identity e
+                    map identity e
+                        |> Expect.equal (identity e)
         , test "Companion to Functor Law I" <|
             \() ->
                 let
                     e =
                         Left ()
                 in
-                    Expect.equal True <| mapLeft identity e == identity e
+                    mapLeft identity e
+                        |> Expect.equal (identity e)
         , fuzz3 Fuzz.int
             Fuzz.int
             Fuzz.int
@@ -54,11 +56,12 @@ functor =
                     g =
                         (*) z
                 in
-                    Expect.equal True <| map (g << f) e == (map g << map f) e
+                    map (g << f) e
+                        |> Expect.equal (map g << map f <| e)
         , fuzz3 Fuzz.int
             Fuzz.int
             Fuzz.int
-            "Companion to Law II"
+            "Companion to Functor Law II"
           <|
             \x y z ->
                 let
@@ -71,32 +74,80 @@ functor =
                     g =
                         (*) z
                 in
-                    Expect.equal True
-                        (mapLeft (g << f) e == (mapLeft g << mapLeft f) e)
+                    mapLeft (g << f) e
+                        |> Expect.equal (mapLeft g << mapLeft f <| e)
         ]
 
 
 applicative : Test
 applicative =
     describe "Applicative"
-        [ test "Identity law: singleton identity |> andMap v == v" <|
+        [ test "Applicative Identity Law: singleton identity |> andMap v == v" <|
             \() ->
                 let
-                    e =
+                    v =
                         Right ()
                 in
                     singleton identity
-                        |> andMap e
-                        |> (==) e
-                        |> Expect.equal True
-        , test "Companion to Identity law" <|
+                        |> andMap v
+                        |> Expect.equal v
+        , test "Companion to Applicative Identity Law" <|
             \() ->
                 let
-                    e =
+                    v =
                         Left ()
                 in
                     Left identity
-                        |> andMapLeft e
-                        |> (==) e
-                        |> Expect.equal True
+                        |> andMapLeft v
+                        |> Expect.equal v
+        , fuzz2
+            Fuzz.int
+            Fuzz.int
+            "Applicative Homomorphism Law: singleton f |> andMap singleton x == singleton (f x)"
+          <|
+            \x y ->
+                let
+                    f =
+                        (+) x
+                in
+                    singleton f
+                        |> andMap (singleton y)
+                        |> Expect.equal (singleton <| f y)
+        , fuzz2
+            Fuzz.int
+            Fuzz.int
+            "Companion to Applicative Homomorphism Law"
+          <|
+            \x y ->
+                let
+                    f =
+                        (+) x
+                in
+                    Left f
+                        |> andMapLeft (Left y)
+                        |> Expect.equal (Left <| f y)
+        , fuzz2 Fuzz.int
+            Fuzz.int
+            "Applicative Interchange Law: u |> andMap (singleton y) == singleton ((|>) y) |> andMap u"
+          <|
+            \x y ->
+                let
+                    u =
+                        singleton <| (+) x
+                in
+                    u
+                        |> andMap (singleton y)
+                        |> Expect.equal ((|>) y |> singleton |> andMap u)
+        , fuzz2 Fuzz.int
+            Fuzz.int
+            "Companion to Applicative Interchange Law"
+          <|
+            \x y ->
+                let
+                    u =
+                        Left <| (+) x
+                in
+                    u
+                        |> andMapLeft (Left y)
+                        |> Expect.equal ((|>) y |> Left |> andMapLeft u)
         ]
