@@ -388,7 +388,6 @@ andThenRight =
 
 
 
--- COMBINATORS --
 -- LIST HELPERS
 
 
