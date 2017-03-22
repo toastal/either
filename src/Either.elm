@@ -38,7 +38,6 @@ module Either
         , unpack
         , unwrap
         , swap
-        , either
         )
 
 
@@ -72,10 +71,8 @@ a `Right b`.
 @docs toResult, fromResult
 
 # Rest of the Helpers
-@docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap, either
+@docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
 -}
-
-import Json.Decode exposing (Decoder, oneOf)
 
 -- TYPE DEFINITION --
 
@@ -681,16 +678,3 @@ swap e =
 
         Right b ->
             Left b
-
-
-{-| Decode an `Either` from a JSON Value.
-
-    decodeString (either string int) "4" == Ok (Right 4)
-
--}
-either : Decoder a -> Decoder b -> Decoder (Either a b)
-either a b =
-    oneOf
-        [ Json.Decode.map Left a
-        , Json.Decode.map Right b
-        ]
