@@ -40,6 +40,7 @@ module Either
         , swap
         )
 
+
 {-|
 A generic structure for a type with two possibilities: a `Left a` or
 a `Right b`.
