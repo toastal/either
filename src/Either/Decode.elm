@@ -4,7 +4,9 @@ module Either.Decode
         )
 
 {-|
-Provides a Json decoder for the `Either` type.
+Provides a <abbr title="JavaScript Object Notation">JSON</abbr>
+[`Decoder`](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#Decoder)
+for the `Either` type.
 
 
 # Definition
@@ -13,17 +15,18 @@ Provides a Json decoder for the `Either` type.
 -}
 
 import Either exposing (Either(..))
-import Json.Decode as Json exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder)
 
 
-{-| Decode an `Either` from a JSON Value.
+{-| Decode an `Either` from a <abbr title="JavaScript Object Notation">JSON</abbr>
+[`Value`](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#Value).
 
     decodeString (either string int) "4" == Ok (Right 4)
 
 -}
 either : Decoder a -> Decoder b -> Decoder (Either a b)
 either a b =
-    Json.oneOf
-        [ Json.map Left a
-        , Json.map Right b
+    Decode.oneOf
+        [ Decode.map Left a
+        , Decode.map Right b
         ]

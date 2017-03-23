@@ -22,6 +22,7 @@ module Either
         , lefts
         , rights
         , partition
+        , biList
         , toMaybe
         , leftToMaybe
         , rightToMaybe
@@ -39,7 +40,6 @@ module Either
         , unwrap
         , swap
         )
-
 
 {-|
 A generic structure for a type with two possibilities: a `Left a` or
@@ -62,7 +62,7 @@ a `Right b`.
 @docs andThen, andThenLeft, andThenRight
 
 # List Helpers
-@docs lefts, rights, partition
+@docs lefts, rights, partition, biList
 
 # Maybe Helpers
 @docs toMaybe, leftToMaybe, rightToMaybe, fromMaybe, leftFromMaybe, rightFromMaybe
@@ -147,8 +147,8 @@ mapBoth f g e =
 {-| Not crazy on the name, but apply a function to either the `Left`
 or the `Right` where the `Left` and the `Right` are of the same type.
 
-    mapBoth ((+) 1) <| Left 2  == Left 3
-    mapBoth ((+) 1) <| Right 3 == Right 4
+    mapEach ((+) 1) <| Left 2  == Left 3
+    mapEach ((+) 1) <| Right 3 == Right 4
 -}
 mapEach : (a -> b) -> Either a a -> Either b b
 mapEach f e =
@@ -444,8 +444,17 @@ partition =
                 Right b ->
                     ( ls, b :: rs )
     in
-        List.foldr fun
-            ( [], [] )
+        List.foldr fun ( [], [] )
+
+
+{-| Collects the list of elements of a structure, from left to right.
+
+    biList <| Left 4  == [ 4 ]
+    biList <| Right 9 == [ 9 ]
+-}
+biList : Either a a -> List a
+biList =
+    unpack List.singleton List.singleton
 
 
 
