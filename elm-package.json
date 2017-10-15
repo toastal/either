@@ -1,5 +1,5 @@
 {
-    "version": "3.2.0",
+    "version": "3.2.1",
     "summary": "A more complete Either for representing a structure with two types",
     "repository": "https://github.com/toastal/either.git",
     "license": "BSD3",
@@ -8,7 +8,8 @@
     ],
     "exposed-modules": [
         "Either",
-        "Either.Decode"
+        "Either.Decode",
+        "Either.Prism"
     ],
     "dependencies": {
         "elm-lang/core": "5.1.1 <= v < 6.0.0"

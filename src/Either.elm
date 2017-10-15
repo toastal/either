@@ -41,37 +41,54 @@ module Either
         , swap
         )
 
-{-|
-A generic structure for a type with two possibilities: a `Left a` or
+{-| A generic structure for a type with two possibilities: a `Left a` or
 a `Right b`.
 
 
 # Definition
+
 @docs Either
 
+
 # Mapping (Functor & Bifunctor)
+
 @docs map, mapBoth, mapLeft, mapRight, mapEach
 
+
 # Applying (Applicative)
+
 @docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
 
+
 # Folding (Foldable)
+
 @docs length, foldl, foldr
 
+
 # Chaining (Monad)
+
 @docs andThen, andThenLeft, andThenRight
 
+
 # List Helpers
+
 @docs lefts, rights, partition, biList
 
+
 # Maybe Helpers
+
 @docs toMaybe, leftToMaybe, rightToMaybe, fromMaybe, leftFromMaybe, rightFromMaybe
 
+
 # Result Helpers
+
 @docs toResult, fromResult
 
+
 # Rest of the Helpers
+
 @docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
+
 -}
 
 -- TYPE DEFINITION --
@@ -90,11 +107,12 @@ type Either a b
 
 
 {-| Apply a function to an `Either`. If the argument is `Right`, it
-will be converted.  If the argument is an `Left`, the same left value
+will be converted. If the argument is an `Left`, the same left value
 will propogate through.
 
-    map ((+) 1) <| Left "Hello" == Left "Hello"
-    map ((+) 1) <| Right 2      == Right 3
+    map ((+) 1) (Left "Hello") == Left "Hello"
+    map ((+) 1) (Right 2)      == Right 3
+
 -}
 map : (a -> b) -> Either x a -> Either x b
 map f e =
@@ -108,8 +126,9 @@ map f e =
 
 {-| Apply a function to the `Left` of an `Either`.
 
-    mapLeft ((+) 1) <| Left 2  == Left 3
-    mapLeft ((+) 1) <| Right 2 == Right 2
+    mapLeft ((+) 1) (Left 2)  == Left 3
+    mapLeft ((+) 1) (Right 2) == Right 2
+
 -}
 mapLeft : (a -> b) -> Either a x -> Either b x
 mapLeft f e =
@@ -131,8 +150,9 @@ mapRight =
 {-| Apply the first argument function to a `Left` and the second
 argument function to a `Right` of an `Either`.
 
-    mapBoth (flip (++) "!!") ((+) 1) <| Left "Hello" == Left "Hello!!"
-    mapBoth (flip (++) "!!") ((+) 1) <| Right 2      == Right 3
+    mapBoth (\s -> s ++ "!!") ((+) 1) (Left "Hello") == Left "Hello!!"
+    mapBoth (\s -> s ++ "!!") ((+) 1) (Right 2)      == Right 3
+
 -}
 mapBoth : (a -> b) -> (c -> d) -> Either a c -> Either b d
 mapBoth f g e =
@@ -147,8 +167,9 @@ mapBoth f g e =
 {-| Not crazy on the name, but apply a function to either the `Left`
 or the `Right` where the `Left` and the `Right` are of the same type.
 
-    mapEach ((+) 1) <| Left 2  == Left 3
-    mapEach ((+) 1) <| Right 3 == Right 4
+    mapEach ((+) 1) (Left 2)  == Left 3
+    mapEach ((+) 1) (Right 3) == Right 4
+
 -}
 mapEach : (a -> b) -> Either a a -> Either b b
 mapEach f e =
@@ -169,6 +190,7 @@ mapEach f e =
 
     length <| Left 2         == 0
     length <| Right "Sharks" == 1
+
 -}
 length : Either a b -> Int
 length e =
@@ -191,6 +213,7 @@ If it is a `Right` only the accumulator is returned.
 
     foldl (*) 2 <| Left 3  == 6
     foldl (*) 2 <| Right 3 == 2
+
 -}
 foldl : (a -> b -> b) -> b -> Either a a -> b
 foldl f acc e =
@@ -208,6 +231,7 @@ If it is a `Left` only the accumulator is returned.
 
     foldr (*) 2 <| Left 3  == 2
     foldr (*) 2 <| Right 3 == 6
+
 -}
 foldr : (a -> b -> b) -> b -> Either a a -> b
 foldr f acc e =
@@ -224,10 +248,11 @@ foldr f acc e =
 
 
 {-| Create a `singleton` from a value to an `Either` with a `Right`
-of the same type.  Also known as `pure`. Use the `Left` constructor
+of the same type. Also known as `pure`. Use the `Left` constructor
 for a singleton of the `Left` variety.
 
     singleton 2 == Right 2
+
 -}
 singleton : b -> Either x b
 singleton =
@@ -242,6 +267,7 @@ arguments is `Left x`, return `Left x`. Also known as `apply`.
     Left "Hello" |> andMap (Right 2)       == Left "Hello"
     Right ((+) 1) |> andMap (Left "World") == Left "World"
     Right ((+) 1) |> andMap (Right 2)      == Right 3
+
 -}
 andMap : Either x a -> Either x (a -> b) -> Either x b
 andMap e e1 =
@@ -261,6 +287,7 @@ arguments is `Right x`, return `Right x`. Also known as `apply`.
     Left (flip (++) "!!" ) |> andMap Right 2      == Right 2
     Right 99 |> andMap (Left "World")             == Right 99
     Right 99 |> andMap (Right 2)                  == Right 99
+
 -}
 andMapLeft : Either a x -> Either (a -> b) x -> Either b x
 andMapLeft e e1 =
@@ -283,15 +310,15 @@ andMapRight =
 If not, the first argument which is a `Left` will propagate through.
 Also known as `liftA2`.
 
-    map2 (+) (Left "Hello") <| Left "World" == Left "Hello"
-    map2 (+) (Left "Hello") <| Right 3      == Left "Hello"
-    map2 (+) (Right 2) <| Left "World"      == Left "World"
-    map2 (+) (Right 2) <| Right 3           == Right 5
-
+    map2 (+) (Left "Hello") (Left "World") == Left "Hello"
+    map2 (+) (Left "Hello") (Right 3)      == Left "Hello"
+    map2 (+) (Right 2) (Left "World")      == Left "World"
+    map2 (+) (Right 2) (Right 3)           == Right 5
 
 It’s essentially a helper for (and why it’s under applicative)
 
     singleton (+) |> andMap (Right 2) |> andMap (Right 3) == Right 5
+
 -}
 map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
 map2 f e e1 =
@@ -354,6 +381,7 @@ a chain is on a `Left`. Also known as `bind`.
 
     Left "Hello" |> andThen ((+) 1 >> Right) == Left "Hello"
     Right 2 |> andThen ((+) 1 >> Right)      == Right 3
+
 -}
 andThen : (a -> Either x b) -> Either x a -> Either x b
 andThen f e =
@@ -370,6 +398,7 @@ a chain is on a `Right`. Also known as `bind`.
 
     Left "Hello" |> andThen (flip (++) "!!" >> Left) == Left "Hello!!"
     Right 2 |> andThen (flip (++) "!!" >> Left)      == Right 2
+
 -}
 andThenLeft : (a -> Either b x) -> Either a x -> Either b x
 andThenLeft f e =
@@ -394,7 +423,8 @@ andThenRight =
 
 {-| Converts a `List` of `Either a x` to a List of `a`.
 
-    lefts [ Left "Hello", Right 2 ] == [ "Hello" ]
+    lefts [ Left "Hello", Left "world", Right 2 ] == [ "Hello", "world" ]
+
 -}
 lefts : List (Either a x) -> List a
 lefts =
@@ -412,7 +442,8 @@ lefts =
 
 {-| Converts a `List` of `Either x b` to a List of `b`.
 
-    rights [ Left "Hello", Right 2 ] == [ 2 ]
+    rights [ Left "Hello", Left, "world", Right 2 ] == [ 2 ]
+
 -}
 rights : List (Either x b) -> List b
 rights =
@@ -431,7 +462,8 @@ rights =
 {-| Converts a `List` of `Either a b`, into a tuple2 where
 the first value is a `List a` and the second is `List b`.
 
-    partition [ Left "Hello", Right 2 ] == ( [ "Hello" ], [ 2 ] )
+    partition [ Left "Hello", Left "world", Right 2 ] == ( [ "Hello", "World" ], [ 2 ] )
+
 -}
 partition : List (Either a b) -> ( List a, List b )
 partition =
@@ -451,6 +483,7 @@ partition =
 
     biList <| Left 4  == [ 4 ]
     biList <| Right 9 == [ 9 ]
+
 -}
 biList : Either a a -> List a
 biList =
@@ -463,8 +496,9 @@ biList =
 
 {-| `Maybe` get the `Right` side of an `Either`.
 
-    toMaybe <| Left "World" == Nothing
-    toMaybe <| Right 2      == Just 2
+    toMaybe (Left "World") == Nothing
+    toMaybe (Right 2)      == Just 2
+
 -}
 toMaybe : Either x b -> Maybe b
 toMaybe e =
@@ -478,8 +512,9 @@ toMaybe e =
 
 {-| `Maybe` get the `Left` side of an `Either`.
 
-    leftToMaybe <| Left "World" == Just "World"
-    leftToMaybe <| Right 2 == Nothing
+    leftToMaybe (Left "World") == Just "World"
+    leftToMaybe (Right 2)      == Nothing
+
 -}
 leftToMaybe : Either a x -> Maybe a
 leftToMaybe e =
@@ -501,8 +536,9 @@ rightToMaybe =
 {-| Convert from a `Maybe` to `Either` with a default value
 for `Left` for `Nothing`.
 
-    fromMaybe "Hello" <| Just 2 == Right 2
-    fromMaybe "Hello" Nothing   == Left "Hello"
+    fromMaybe "Hello" (Just 2) == Right 2
+    fromMaybe "Hello" Nothing  == Left "Hello"
+
 -}
 fromMaybe : a -> Maybe b -> Either a b
 fromMaybe d m =
@@ -517,8 +553,9 @@ fromMaybe d m =
 {-| Convert from a `Maybe` to `Either` with a default value
 for `Right` for `Nothing`.
 
-    leftFromMaybe 3 <| Just "World" == Left "World"
+    leftFromMaybe 3 (Just "World")  == Left "World"
     leftFromMaybe 3 Nothing         == Right 3
+
 -}
 leftFromMaybe : b -> Maybe a -> Either a b
 leftFromMaybe d m =
@@ -543,8 +580,9 @@ rightFromMaybe =
 
 {-| Convert from `Either` to `Result`.
 
-    toResult <| Left "World" == Err "World"
-    toResult <| Right 2      == Ok 2
+    toResult (Left "World") == Err "World"
+    toResult (Right 2)      == Ok 2
+
 -}
 toResult : Either a b -> Result a b
 toResult e =
@@ -558,8 +596,9 @@ toResult e =
 
 {-| Convert from `Result` to `Either`.
 
-    fromResult <| Err "World" == Left "World"
-    fromResult <| Ok 2        == Right 2
+    fromResult (Err "World") == Left "World"
+    fromResult (Ok 2)        == Right 2
+
 -}
 fromResult : Result a b -> Either a b
 fromResult r =
@@ -577,8 +616,9 @@ fromResult r =
 
 {-| Returns `True` if argument is `Left _`
 
-    isLeft <| Left "World" == True
-    isLeft <| Right 2      == False
+    isLeft (Left "World") == True
+    isLeft (Right 2)      == False
+
 -}
 isLeft : Either a b -> Bool
 isLeft e =
@@ -592,8 +632,9 @@ isLeft e =
 
 {-| Returns `True` if argument is `Right _`
 
-    isRight <| Left "World" == False
-    isRight <| Right 2      == True
+    isRight (Left "World") == False
+    isRight (Right 2)      == True
+
 -}
 isRight : Either a b -> Bool
 isRight e =
@@ -607,8 +648,9 @@ isRight e =
 
 {-| Extract left value or a default.
 
-    fromLeft "World" <| Left "Hello" == "Hello"
-    fromLeft "World" <| Right 2      == "World"
+    fromLeft "World" (Left "Hello") == "Hello"
+    fromLeft "World" (Right 2)      == "World"
+
 -}
 fromLeft : a -> Either a b -> a
 fromLeft d e =
@@ -622,8 +664,9 @@ fromLeft d e =
 
 {-| Extract right value or a default.
 
-    fromRight 3 <| Left "Hello" == 3
-    fromRight 3 <| Right 2      == 2
+    fromRight 3 (Left "Hello") == 3
+    fromRight 3 (Right 2)      == 2
+
 -}
 fromRight : b -> Either a b -> b
 fromRight d e =
@@ -645,8 +688,9 @@ withDefault =
 {-| Given a function for both `Left` and `Right` to to type a generic
 type `c`, collapse down the `Either` to a value of that type.
 
-    unpack identity toString <| Left "World" == "World"
-    unpack identity toString <| Right 2      == "2"
+    unpack identity toString (Left "World") == "World"
+    unpack identity toString (Right 2)      == "2"
+
 -}
 unpack : (a -> c) -> (b -> c) -> Either a b -> c
 unpack f g e =
@@ -661,8 +705,9 @@ unpack f g e =
 {-| Apply a function to `Right` value. If argument was a `Left` use the
 default value. Equivalent to `Either.map >> Either.fromRight`.
 
-    unwrap 99 ((+) 1) <| Left "Hello" == 99
-    unwrap 99 ((+) 1) <| Right 2      == 3
+    unwrap 99 ((+) 1) (Left "Hello") == 99
+    unwrap 99 ((+) 1) (Right 2)      == 3
+
 -}
 unwrap : c -> (b -> c) -> Either x b -> c
 unwrap d f e =
@@ -676,8 +721,9 @@ unwrap d f e =
 
 {-| Swap the `Left` and `Right` sides of an `Either`.
 
-    swap <| Left "World" == Right "World"
-    swap <| Right 2      == Left 2
+    swap (Left "World") == Right "World"
+    swap (Right 2)      == Left 2
+
 -}
 swap : Either a b -> Either b a
 swap e =
