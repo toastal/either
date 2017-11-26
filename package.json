@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/toastal/either.git"
   },
-  "author": "@toastal",
+  "author": "toastal",
   "license": "BSD3",
   "bugs": {
     "url": "https://github.com/EntangledMedia/WebClient/issues"
