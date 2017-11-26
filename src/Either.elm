@@ -4,6 +4,8 @@ module Either
         , map
         , mapLeft
         , mapRight
+        , voidRight
+        , voidLeft
         , mapBoth
         , mapEach
         , singleton
@@ -52,7 +54,7 @@ a `Right b`.
 
 # Mapping (Functor & Bifunctor)
 
-@docs map, mapBoth, mapLeft, mapRight, mapEach
+@docs map, mapLeft, mapRight, voidRight, voidLeft, mapBoth, mapEach
 
 
 # Applying (Applicative)
@@ -147,6 +149,30 @@ mapRight =
     map
 
 
+{-| Ignore the return value of the `Right` using the specified value instead.
+Exactly the same as `<$` in other languages.
+
+    voidRight 2 (Right True)       == Right 2
+    voidRight 2 (Left "banana")    == Left "banana"
+
+-}
+voidRight : a -> Either x b -> Either x a
+voidRight f =
+    map (always f)
+
+
+{-| Ignore the return value of the `Left` using the specified value instead.
+*NOT* the same as `$>` in other languages.
+
+    voidRight "two" (Right True) == Right True
+    voidRight "two" (Left 6)     == Left "two"
+
+-}
+voidLeft : a -> Either b x -> Either a x
+voidLeft f =
+    mapLeft (always f)
+
+
 {-| Apply the first argument function to a `Left` and the second
 argument function to a `Right` of an `Either`.
 
@@ -188,8 +214,8 @@ mapEach f e =
 {-| Returns the length of an `Either`. This happens to be `0` for a
 `Left` and `1` for a `Right`.
 
-    length <| Left 2         == 0
-    length <| Right "Sharks" == 1
+    length (Left 2)         == 0
+    length (Right "Sharks") == 1
 
 -}
 length : Either a b -> Int
@@ -211,8 +237,8 @@ length e =
 it is a `Left` the function is applied with the accumulator.
 If it is a `Right` only the accumulator is returned.
 
-    foldl (*) 2 <| Left 3  == 6
-    foldl (*) 2 <| Right 3 == 2
+    foldl (*) 2 (Left 3)  == 6
+    foldl (*) 2 (Right 3) == 2
 
 -}
 foldl : (a -> b -> b) -> b -> Either a a -> b
@@ -229,8 +255,8 @@ foldl f acc e =
 it is a `Right` the function is applied with the accumulator.
 If it is a `Left` only the accumulator is returned.
 
-    foldr (*) 2 <| Left 3  == 2
-    foldr (*) 2 <| Right 3 == 6
+    foldr (*) 2 (Left 3)  == 2
+    foldr (*) 2 (Right 3) == 6
 
 -}
 foldr : (a -> b -> b) -> b -> Either a a -> b
@@ -283,8 +309,8 @@ andMap e e1 =
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Right x`, return `Right x`. Also known as `apply`.
 
-    Left (flip (++) "!!" ) |> andMap Left "Hello" == Left "Hello!!"
-    Left (flip (++) "!!" ) |> andMap Right 2      == Right 2
+    Left (\s -> s ++ "!!" ) |> andMap Left "Hello" == Left "Hello!!"
+    Left (\s -> s ++ "!!" ) |> andMap Right 2      == Right 2
     Right 99 |> andMap (Left "World")             == Right 99
     Right 99 |> andMap (Right 2)                  == Right 99
 
@@ -481,8 +507,8 @@ partition =
 
 {-| Collects the list of elements of a structure, from left to right.
 
-    biList <| Left 4  == [ 4 ]
-    biList <| Right 9 == [ 9 ]
+    biList (Left 4)  == [ 4 ]
+    biList (Right 9) == [ 9 ]
 
 -}
 biList : Either a a -> List a
