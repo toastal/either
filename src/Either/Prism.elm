@@ -4,7 +4,7 @@ module Either.Prism
         , rightp
         )
 
-{-| [elm-monocle](http://package.elm-lang.org/packages/arturopala/elm-monocle/latest)-compatible `Prisms`.
+{-| [elm-monocle](http://package.elm-lang.org/packages/arturopala/elm-monocle/latest)-compatible `Prism`s.
 
 @docs leftp, rightp
 
