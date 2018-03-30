@@ -164,8 +164,8 @@ voidRight f =
 {-| Ignore the return value of the `Left` using the specified value instead.
 *NOT* the same as `$>` in other languages.
 
-    voidRight "two" (Right True) == Right True
-    voidRight "two" (Left 6)     == Left "two"
+    voidLeft "two" (Right True) == Right True
+    voidLeft "two" (Left 6)     == Left "two"
 
 -}
 voidLeft : a -> Either b x -> Either a x
@@ -422,8 +422,8 @@ andThen f e =
 {-| Chain together in many computations that will stop computing if
 a chain is on a `Right`. Also known as `bind`.
 
-    Left "Hello" |> andThen (flip (++) "!!" >> Left) == Left "Hello!!"
-    Right 2 |> andThen (flip (++) "!!" >> Left)      == Right 2
+    Left "Hello" |> andThen (\s -> s ++ "!!" >> Left) == Left "Hello!!"
+    Right 2 |> andThen (\s -> s ++ "!!" >> Left)      == Right 2
 
 -}
 andThenLeft : (a -> Either b x) -> Either a x -> Either b x
