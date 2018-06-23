@@ -17,10 +17,6 @@ yarn.lock
 *.sw[po]
 
 
-# Dist
-/dist
-
-
 # OS generated files
 .DS_Store
 .DS_Store?
