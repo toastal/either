@@ -1,46 +1,45 @@
 module Either
     exposing
-        ( Either(Left, Right)
-        , map
-        , mapLeft
-        , mapRight
-        , voidRight
-        , voidLeft
-        , mapBoth
-        , mapEach
-        , singleton
+        ( Either(..)
         , andMap
         , andMapLeft
         , andMapRight
-        , map2
-        , map3
-        , map4
-        , length
-        , foldl
-        , foldr
         , andThen
         , andThenLeft
         , andThenRight
-        , lefts
-        , rights
-        , partition
         , biList
-        , toMaybe
-        , leftToMaybe
-        , rightToMaybe
+        , foldl
+        , foldr
+        , fromLeft
         , fromMaybe
-        , leftFromMaybe
-        , rightFromMaybe
-        , toResult
         , fromResult
+        , fromRight
         , isLeft
         , isRight
-        , fromLeft
-        , fromRight
-        , withDefault
+        , leftFromMaybe
+        , leftToMaybe
+        , lefts
+        , length
+        , map
+        , map2
+        , map3
+        , mapBoth
+        , mapEach
+        , mapLeft
+        , mapRight
+        , partition
+        , rightFromMaybe
+        , rightToMaybe
+        , rights
+        , singleton
+        , swap
+        , toMaybe
+        , toResult
         , unpack
         , unwrap
-        , swap
+        , voidLeft
+        , voidRight
+        , withDefault
         )
 
 {-| A generic structure for a type with two possibilities: a `Left a` or
@@ -59,7 +58,7 @@ a `Right b`.
 
 # Applying (Applicative)
 
-@docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
+@docs singleton, andMap, andMapLeft, andMapRight, map2, map3
 
 
 # Folding (Foldable)
@@ -374,27 +373,6 @@ map3 f e e1 e2 =
             Left x
 
         ( _, _, Left x ) ->
-            Left x
-
-
-{-| Like `map2`, but with 4 eithers. Also known as `liftA4`
--}
-map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
-map4 f e e1 e2 e3 =
-    case ( e, e1, e2, e3 ) of
-        ( Right a, Right b, Right c, Right d ) ->
-            Right <| f a b c d
-
-        ( Left x, _, _, _ ) ->
-            Left x
-
-        ( _, Left x, _, _ ) ->
-            Left x
-
-        ( _, _, Left x, _ ) ->
-            Left x
-
-        ( _, _, _, Left x ) ->
             Left x
 
 

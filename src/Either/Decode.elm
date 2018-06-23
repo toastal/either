@@ -3,13 +3,13 @@ module Either.Decode
         ( either
         )
 
-{-|
-Provides a <abbr title="JavaScript Object Notation">JSON</abbr>
+{-| Provides a <abbr title="JavaScript Object Notation">JSON</abbr>
 [`Decoder`](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#Decoder)
 for the `Either` type.
 
 
 # Definition
+
 @docs either
 
 -}
