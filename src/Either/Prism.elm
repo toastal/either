@@ -35,7 +35,7 @@ leftp =
 
     .getOption rightp (Left 1)       == Nothing
     .getOption rightp (Right "fish") == Just "fish"
-    .reverseGet rightp 2             == Right 2
+    .reverseGet rightp "phish"       == Right "phish"
 
 -}
 rightp : Prism (Either x b) b
