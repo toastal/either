@@ -119,7 +119,7 @@ map : (a -> b) -> Either x a -> Either x b
 map f e =
     case e of
         Right b ->
-            Right <| f b
+            Right (f b)
 
         Left a ->
             Left a
@@ -135,7 +135,7 @@ mapLeft : (a -> b) -> Either a x -> Either b x
 mapLeft f e =
     case e of
         Left a ->
-            Left <| f a
+            Left (f a
 
         Right b ->
             Right b
@@ -183,10 +183,10 @@ mapBoth : (a -> b) -> (c -> d) -> Either a c -> Either b d
 mapBoth f g e =
     case e of
         Left a ->
-            Left <| f a
+            Left (f a)
 
         Right b ->
-            Right <| g b
+            Right (g b)
 
 
 {-| Not crazy on the name, but apply a function to either the `Left`
@@ -200,10 +200,10 @@ mapEach : (a -> b) -> Either a a -> Either b b
 mapEach f e =
     case e of
         Left a ->
-            Left <| f a
+            Left (f a)
 
         Right b ->
-            Right <| f b
+            Right (f b)
 
 
 
