@@ -27,6 +27,6 @@ import Json.Decode as Decode exposing (Decoder)
 either : Decoder a -> Decoder b -> Decoder (Either a b)
 either a b =
     Decode.oneOf
-        [ Decode.map Left a
-        , Decode.map Right b
+        [ Decode.map Right b
+        , Decode.map Left a
         ]

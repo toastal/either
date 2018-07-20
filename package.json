@@ -13,12 +13,13 @@
     "url": "git+https://github.com/toastal/either.git"
   },
   "author": "toastal",
-  "license": "BSD3",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/EntangledMedia/WebClient/issues"
   },
-  "devDependencies": {
-    "elm": "^0.18.0",
-    "elm-test": "^0.18.2"
+  "devDependencies": {},
+  "dependencies": {
+    "elm": "~0.19.0",
+    "elm-test": "~0.19.0"
   }
 }
