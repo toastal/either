@@ -5,9 +5,13 @@ module Either
         , andMapLeft
         , andMapRight
         , andThen
+        , andThenBoth
         , andThenLeft
         , andThenRight
+        , appendLeft
+        , appendRight
         , biList
+        , equals
         , foldl
         , foldr
         , fromLeft
@@ -33,8 +37,20 @@ module Either
         , rights
         , singleton
         , swap
+        , toArray
+        , toArrayVia
+        , toDict
+        , toDictVia
+        , toList
+        , toListVia
         , toMaybe
+        , toMaybeVia
         , toResult
+        , toResultVia
+        , toSet
+        , toSetVia
+        , toTask
+        , toTaskVia
         , unpack
         , unwrap
         , voidLeft
@@ -58,7 +74,7 @@ a `Right b`.
 
 # Applying (Applicative)
 
-@docs singleton, andMap, andMapLeft, andMapRight, map2, map3
+@docs singleton, andMap, andMapLeft, andMapRight, andMapBoth, map2, map3, map4
 
 
 # Folding (Foldable)
@@ -68,22 +84,52 @@ a `Right b`.
 
 # Chaining (Monad)
 
-@docs andThen, andThenLeft, andThenRight
+@docs andThen, andThenLeft, andThenRight, andThenBoth
+
+
+# Appending (Semigroup)
+
+@docs appendLeft, appendRight
+
+
+# Equals (Eq)
+
+@docs equals
 
 
 # List Helpers
 
-@docs lefts, rights, partition, biList
+@docs toList, toListVia, lefts, rights, partition, biList
+
+
+# Array Helpers
+
+@docs toArray, toArrayVia
+
+
+# Set Helpers
+
+@docs toSet, toSetVia
+
+
+# Dict Helpers
+
+@docs toDict, toDictVia
 
 
 # Maybe Helpers
 
-@docs toMaybe, leftToMaybe, rightToMaybe, fromMaybe, leftFromMaybe, rightFromMaybe
+@docs toMaybe, toMaybeVia, leftToMaybe, rightToMaybe, fromMaybe, leftFromMaybe, rightFromMaybe
 
 
 # Result Helpers
 
-@docs toResult, fromResult
+@docs toResult, toResultVia, fromResult
+
+
+# Task Helpers
+
+@docs toTask, toTaskVia
 
 
 # Rest of the Helpers
@@ -91,6 +137,14 @@ a `Right b`.
 @docs isLeft, isRight, fromLeft, fromRight, withDefault, unpack, unwrap, swap
 
 -}
+
+import Array exposing (Array)
+import Dict exposing (Dict)
+import List
+import Set exposing (Set)
+import Task exposing (Task)
+
+
 
 -- TYPE DEFINITION --
 
@@ -135,7 +189,7 @@ mapLeft : (a -> b) -> Either a x -> Either b x
 mapLeft f e =
     case e of
         Left a ->
-            Left (f a
+            Left (f a)
 
         Right b ->
             Right b
@@ -161,7 +215,7 @@ voidRight f =
 
 
 {-| Ignore the return value of the `Left` using the specified value instead.
-*NOT* the same as `$>` in other languages.
+_NOT_ the same as `$>` in other languages.
 
     voidLeft "two" (Right True) == Right True
     voidLeft "two" (Left 6)     == Left "two"
@@ -199,11 +253,11 @@ or the `Right` where the `Left` and the `Right` are of the same type.
 mapEach : (a -> b) -> Either a a -> Either b b
 mapEach f e =
     case e of
-        Left a ->
-            Left (f a)
-
         Right b ->
             Right (f b)
+
+        Left a ->
+            Left (f a)
 
 
 
@@ -288,40 +342,40 @@ singleton =
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Left x`, return `Left x`. Also known as `apply`.
 
-    Left "Hello" |> andMap (Left "World")  == Left "Hello"
-    Left "Hello" |> andMap (Right 2)       == Left "Hello"
+    Left "Hello"  |> andMap (Left "World") == Left "Hello"
+    Left "Hello"  |> andMap (Right 2)      == Left "Hello"
     Right ((+) 1) |> andMap (Left "World") == Left "World"
     Right ((+) 1) |> andMap (Right 2)      == Right 3
 
 -}
 andMap : Either x a -> Either x (a -> b) -> Either x b
 andMap e e1 =
-    case ( e, e1 ) of
-        ( _, Left x ) ->
-            Left x
+    case e1 of
+        Right f ->
+            map f e
 
-        ( r, Right f ) ->
-            map f r
+        Left x ->
+            Left x
 
 
 {-| Apply the function that is inside `Either` to a value that is inside
 `Either`. Return the result inside `Either`. If one of the `Either`
 arguments is `Right x`, return `Right x`. Also known as `apply`.
 
-    Left (\s -> s ++ "!!" ) |> andMap Left "Hello" == Left "Hello!!"
-    Left (\s -> s ++ "!!" ) |> andMap Right 2      == Right 2
-    Right 99 |> andMap (Left "World")             == Right 99
-    Right 99 |> andMap (Right 2)                  == Right 99
+    Left (\s -> s ++ "!!") |> andMap (Left "Hello") == Left "Hello!!"
+    Left (\s -> s ++ "!!") |> andMap (Right 2)      == Right 2
+    Right 99               |> andMap (Left "World") == Right 99
+    Right 99               |> andMap (Right 2)      == Right 99
 
 -}
 andMapLeft : Either a x -> Either (a -> b) x -> Either b x
 andMapLeft e e1 =
-    case ( e, e1 ) of
-        ( _, Right x ) ->
-            Right x
+    case e1 of
+        Left f ->
+            mapLeft f e
 
-        ( l, Left f ) ->
-            mapLeft f l
+        Right x ->
+            Right x
 
 
 {-| Alias for `andMap`.
@@ -337,8 +391,8 @@ Also known as `liftA2`.
 
     map2 (+) (Left "Hello") (Left "World") == Left "Hello"
     map2 (+) (Left "Hello") (Right 3)      == Left "Hello"
-    map2 (+) (Right 2) (Left "World")      == Left "World"
-    map2 (+) (Right 2) (Right 3)           == Right 5
+    map2 (+) (Right 2)      (Left "World") == Left "World"
+    map2 (+) (Right 2)      (Right 3)      == Right 5
 
 It’s essentially a helper for (and why it’s under applicative)
 
@@ -347,33 +401,21 @@ It’s essentially a helper for (and why it’s under applicative)
 -}
 map2 : (a -> b -> c) -> Either x a -> Either x b -> Either x c
 map2 f e e1 =
-    case ( e, e1 ) of
-        ( Right a, Right b ) ->
-            Right <| f a b
-
-        ( Left x, _ ) ->
-            Left x
-
-        ( _, Left x ) ->
-            Left x
+    map f e |> andMap e1
 
 
 {-| Like `map2`, but with 3 eithers. Also known as `liftA3`
 -}
 map3 : (a -> b -> c -> d) -> Either x a -> Either x b -> Either x c -> Either x d
 map3 f e e1 e2 =
-    case ( e, e1, e2 ) of
-        ( Right a, Right b, Right c ) ->
-            Right <| f a b c
+    map f e |> andMap e1 |> andMap e2
 
-        ( Left x, _, _ ) ->
-            Left x
 
-        ( _, Left x, _ ) ->
-            Left x
-
-        ( _, _, Left x ) ->
-            Left x
+{-| Like `map2`, but with 4 eithers. Also known as `liftA4`
+-}
+map4 : (a -> b -> c -> d -> e) -> Either x a -> Either x b -> Either x c -> Either x d -> Either x e
+map4 f e e1 e2 e3 =
+    map f e |> andMap e1 |> andMap e2 |> andMap e3
 
 
 
@@ -383,8 +425,8 @@ map3 f e e1 e2 =
 {-| Chain together in many computations that will stop computing if
 a chain is on a `Left`. Also known as `bind`.
 
-    Left "Hello" |> andThen ((+) 1 >> Right) == Left "Hello"
-    Right 2 |> andThen ((+) 1 >> Right)      == Right 3
+    Left "Hello" |> andThen (\i -> Right (i + 1)) == Left "Hello"
+    Right 2      |> andThen (\i -> Right (i + 1)) == Right 3
 
 -}
 andThen : (a -> Either x b) -> Either x a -> Either x b
@@ -400,8 +442,8 @@ andThen f e =
 {-| Chain together in many computations that will stop computing if
 a chain is on a `Right`. Also known as `bind`.
 
-    Left "Hello" |> andThen (\s -> s ++ "!!" >> Left) == Left "Hello!!"
-    Right 2 |> andThen (\s -> s ++ "!!" >> Left)      == Right 2
+    Left "Hello" |> andThen (\s -> Left (s ++ "!!")) == Left "Hello!!"
+    Right 2      |> andThen (\s -> Left (s ++ "!!")) == Right 2
 
 -}
 andThenLeft : (a -> Either b x) -> Either a x -> Either b x
@@ -421,8 +463,100 @@ andThenRight =
     andThen
 
 
+{-| -}
+andThenBoth : (a -> Either c d) -> (b -> Either c d) -> Either a b -> Either c d
+andThenBoth f g e =
+    case e of
+        Right b ->
+            g b
+
+        Left a ->
+            f a
+
+
+
+-- SEMIGROUP
+
+
+{-| Append inner values of a `Left`.
+
+    appendLeft (Left [ 1, 2 ]) (Left [ 3, 4 ])  == Left [ 1, 2, 3, 4 ]
+    appendLeft (Left [ 1, 2 ]) (Right 'b')      == Left [ 1, 2 ]
+    appendLeft (Right 'a')     (Left [ 3, 4 ])  == Left [ 3, 4 ]
+    appendLeft (Right 'a')     (Right 'b')      == Right 'a'
+
+-}
+appendLeft : Either appendable x -> Either appendable x -> Either appendable x
+appendLeft e e1 =
+    mapLeft (++) e |> andMapLeft e1
+
+
+{-| Append inner values of a `Right`.
+
+    appendRight (Right "Hello") (Right "World") == Right "HelloWorld"
+    appendRight (Right "Hello") (Left 1)        == Right "Hello"
+    appendRight (Left 0)        (Right "World") == Right "World"
+    appendRight (Left 0)        (Left 1)        == Left 0
+
+-}
+appendRight : Either x appendable -> Either x appendable -> Either x appendable
+appendRight e e1 =
+    map (++) e |> andMap e1
+
+
+
+-- EQ
+
+
+{-| One rendition of equals assuming both sides of the `Either` are comparable.
+
+    equals (Right "Hello") (Right "Hello") == True
+    equals (Right "Hello") (Right "World") == False
+    equals (Right "Hello") (Left "Hello")  == False
+    equals (Right "Hello") (Left 1)        == False
+    equals (Left 0)        (Right "World") == False
+    equals (Left 0)        (Left 0)        == True
+    equals (Left 0)        (Left 1)        == False
+    equals (Left 0)        (Right 0)       == False
+
+-}
+equals : Either comparable comparable1 -> Either comparable comparable1 -> Bool
+equals e e1 =
+    case ( e, e1 ) of
+        ( Right a, Right b ) ->
+            a == b
+
+        ( Left a, Left b ) ->
+            a == b
+
+        _ ->
+            False
+
+
 
 -- LIST HELPERS
+
+
+{-| Converts a `Either x b` to a `List` of `b`.
+
+    toList (Right 1)  == [ 1 ]
+    toList (Left 'a') == []
+
+-}
+toList : Either x a -> List a
+toList =
+    toListVia identity
+
+
+{-| Folds a `Either x b` to a `List` of `c` via a transforming function.
+
+    toList ((+) 1) (Right 1)  == [ 2 ]
+    toList ((+) 1) (Left 'a') == []
+
+-}
+toListVia : (a -> b) -> Either x a -> List b
+toListVia f =
+    unwrap [] (f >> List.singleton)
 
 
 {-| Converts a `List` of `Either a x` to a List of `a`.
@@ -432,16 +566,7 @@ andThenRight =
 -}
 lefts : List (Either a x) -> List a
 lefts =
-    List.foldr
-        (\e acc ->
-            case e of
-                Left a ->
-                    a :: acc
-
-                _ ->
-                    acc
-        )
-        []
+    List.foldr (\e acc -> unwrapLeft acc (\a -> a :: acc) e) []
 
 
 {-| Converts a `List` of `Either x b` to a List of `b`.
@@ -449,18 +574,9 @@ lefts =
     rights [ Left "Hello", Left, "world", Right 2 ] == [ 2 ]
 
 -}
-rights : List (Either x b) -> List b
+rights : List (Either x a) -> List a
 rights =
-    List.foldr
-        (\e acc ->
-            case e of
-                Right b ->
-                    b :: acc
-
-                _ ->
-                    acc
-        )
-        []
+    List.foldr (\e acc -> unwrap acc (\a -> a :: acc) e) []
 
 
 {-| Converts a `List` of `Either a b`, into a tuple2 where
@@ -472,15 +588,15 @@ the first value is a `List a` and the second is `List b`.
 partition : List (Either a b) -> ( List a, List b )
 partition =
     let
-        fun e ( ls, rs ) =
+        fn e ( ls, rs ) =
             case e of
-                Left a ->
-                    ( a :: ls, rs )
-
                 Right b ->
                     ( ls, b :: rs )
+
+                Left a ->
+                    ( a :: ls, rs )
     in
-        List.foldr fun ( [], [] )
+    List.foldr fn ( [], [] )
 
 
 {-| Collects the list of elements of a structure, from left to right.
@@ -495,23 +611,108 @@ biList =
 
 
 
+-- ARRAY HELPERS
+
+
+{-| Convert from `Either` to `Array`
+
+    toArray (Right 1)  == Array.fromList [ 1 ]
+    toArray (Left 'a') == Array.fromList []
+
+-}
+toArray : Either x b -> Array b
+toArray =
+    toArrayVia identity
+
+
+{-| Folds from `Either` to `Array` via a transforming function.
+
+    toArrayVia ((+) 1) (Right 1)  == Array.fromList [ 2 ]
+    toArrayVia ((+) 1) (Left 'a') == Array.fromList []
+
+-}
+toArrayVia : (a -> b) -> Either x a -> Array b
+toArrayVia f =
+    unwrap Array.empty (\a -> Array.initialize 1 (\_ -> f a))
+
+
+
+-- SET HELPERS
+
+
+{-| Convert from `Either` to `Set`
+
+    toSet (Right 1)  == Set.fromList [ 1 ]
+    toSet (Left 'a') == Set.fromList []
+
+-}
+toSet : Either x comparable -> Set comparable
+toSet =
+    toSetVia identity
+
+
+{-| Folds from `Either` to `Set` via a transforming function.
+
+    toSetVia ((+) 1) (Right 1)  == Set.fromList [ 2 ]
+    toSetVia ((+) 1) (Left 'a') == Set.fromList []
+
+-}
+toSetVia : (a -> comparable) -> Either x a -> Set comparable
+toSetVia f =
+    unwrap Set.empty (f >> Set.singleton)
+
+
+
+-- DICT HELPERS
+
+
+{-| Convert from `Either` to `Dict`
+
+    toDict (Right ( "KEY", 1 ))  == Dict.fromList [ ( "KEY", 1 ) ]
+    toDict (Left 'a') == Dict.fromList []
+
+-}
+toDict : Either x ( comparable, v ) -> Dict comparable v
+toDict =
+    toDictVia identity
+
+
+{-| Folds from `Either` to `Dict` via a transforming function.
+
+    toDictVia (Right ( "KEY", 1 ))  == Dict.fromList [ ( "KEY", 1 ) ]
+    toDictVia (Left 'a') == Dict.fromList []
+
+-}
+toDictVia : (a -> ( comparable, v )) -> Either x a -> Dict comparable v
+toDictVia f =
+    unwrap Dict.empty (f >> (\( k, v ) -> Dict.singleton k v))
+
+
+
 -- MAYBE HELPERS
 
 
 {-| `Maybe` get the `Right` side of an `Either`.
 
-    toMaybe (Left "World") == Nothing
     toMaybe (Right 2)      == Just 2
+    toMaybe (Left "World") == Nothing
 
 -}
 toMaybe : Either x b -> Maybe b
-toMaybe e =
-    case e of
-        Right b ->
-            Just b
+toMaybe =
+    toMaybeVia identity
 
-        _ ->
-            Nothing
+
+{-| Folds a `Maybe` get the `Right` side of an `Either` via a transforming
+function.
+
+    toMaybeVia ((*) 3) (Right 2)      == Just 6
+    toMaybeVia ((*) 3) (Left "World") == Nothing
+
+-}
+toMaybeVia : (b -> c) -> Either x b -> Maybe c
+toMaybeVia f =
+    unwrap Nothing (f >> Just)
 
 
 {-| `Maybe` get the `Left` side of an `Either`.
@@ -523,11 +724,11 @@ toMaybe e =
 leftToMaybe : Either a x -> Maybe a
 leftToMaybe e =
     case e of
+        Right _ ->
+            Nothing
+
         Left x ->
             Just x
-
-        _ ->
-            Nothing
 
 
 {-| Alias for `toMaybe`.
@@ -547,11 +748,11 @@ for `Left` for `Nothing`.
 fromMaybe : a -> Maybe b -> Either a b
 fromMaybe d m =
     case m of
-        Just v ->
-            Right v
-
         Nothing ->
             Left d
+
+        Just v ->
+            Right v
 
 
 {-| Convert from a `Maybe` to `Either` with a default value
@@ -564,11 +765,11 @@ for `Right` for `Nothing`.
 leftFromMaybe : b -> Maybe a -> Either a b
 leftFromMaybe d m =
     case m of
-        Just v ->
-            Left v
-
         Nothing ->
             Right d
+
+        Just v ->
+            Left v
 
 
 {-| Alias for `fromMaybe`.
@@ -584,24 +785,30 @@ rightFromMaybe =
 
 {-| Convert from `Either` to `Result`.
 
-    toResult (Left "World") == Err "World"
     toResult (Right 2)      == Ok 2
+    toResult (Left "World") == Err "World"
 
 -}
 toResult : Either a b -> Result a b
-toResult e =
-    case e of
-        Left a ->
-            Err a
+toResult =
+    toResultVia identity
 
-        Right b ->
-            Ok b
+
+{-| Fold from `Either` to `Result` via transforming function.
+
+    toResultVia ((+) 3) (Left "World") == Err "World"
+    toResultVia ((+) 3) (Right 2)      == Ok 5
+
+-}
+toResultVia : (b -> c) -> Either a b -> Result a c
+toResultVia f =
+    unpack Err (f >> Ok)
 
 
 {-| Convert from `Result` to `Either`.
 
-    fromResult (Err "World") == Left "World"
     fromResult (Ok 2)        == Right 2
+    fromResult (Err "World") == Left "World"
 
 -}
 fromResult : Result a b -> Either a b
@@ -612,6 +819,32 @@ fromResult r =
 
         Ok b ->
             Right b
+
+
+
+-- TASK HELPERS
+
+
+{-| Convert from `Either` to `Task`
+
+    toTask (Right "World") -- succeed "World"
+    toTask (Left 2)      -- fail 2
+
+-}
+toTask : Either a b -> Task a b
+toTask =
+    toTaskVia identity
+
+
+{-| Fold from `Either` to `Task` via transforming function.
+
+    toTaskVia (\s -> s ++ "!!") (Right "World") -- succeed "World!!"
+    toTaskVia (\s -> s ++ "!!") (Left 2)        -- fail 2
+
+-}
+toTaskVia : (b -> c) -> Either a b -> Task a c
+toTaskVia f =
+    unpack Task.fail (f >> Task.succeed)
 
 
 
@@ -699,11 +932,11 @@ type `c`, collapse down the `Either` to a value of that type.
 unpack : (a -> c) -> (b -> c) -> Either a b -> c
 unpack f g e =
     case e of
-        Left a ->
-            f a
-
         Right b ->
             g b
+
+        Left a ->
+            f a
 
 
 {-| Apply a function to `Right` value. If argument was a `Left` use the
@@ -713,14 +946,24 @@ default value. Equivalent to `Either.map >> Either.fromRight`.
     unwrap 99 ((+) 1) (Right 2)      == 3
 
 -}
-unwrap : c -> (b -> c) -> Either x b -> c
+unwrap : b -> (a -> b) -> Either x a -> b
 unwrap d f e =
     case e of
-        Right b ->
-            f b
-
-        _ ->
+        Left _ ->
             d
+
+        Right a ->
+            f a
+
+
+unwrapLeft : b -> (a -> b) -> Either a x -> b
+unwrapLeft d f e =
+    case e of
+        Right _ ->
+            d
+
+        Left a ->
+            f a
 
 
 {-| Swap the `Left` and `Right` sides of an `Either`.
@@ -730,10 +973,5 @@ unwrap d f e =
 
 -}
 swap : Either a b -> Either b a
-swap e =
-    case e of
-        Left a ->
-            Right a
-
-        Right b ->
-            Left b
+swap =
+    unpack Right Left
