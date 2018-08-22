@@ -27,6 +27,7 @@ module Either
         , map
         , map2
         , map3
+        , map4
         , mapBoth
         , mapEach
         , mapLeft
@@ -74,7 +75,7 @@ a `Right b`.
 
 # Applying (Applicative)
 
-@docs singleton, andMap, andMapLeft, andMapRight, andMapBoth, map2, map3, map4
+@docs singleton, andMap, andMapLeft, andMapRight, map2, map3, map4
 
 
 # Folding (Foldable)
