@@ -1,6 +1,6 @@
 {
   "name": "either",
-  "version": "3.3.0",
+  "version": "3.5.1",
   "description": "A more complete Either for representing a structure with two types",
   "directories": {
     "test": "tests"
@@ -19,7 +19,7 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "elm": "0.19.0-bugfix1",
+    "elm": "~0.19.0-bugfix1",
     "elm-test": "^0.18.12"
   }
 }
