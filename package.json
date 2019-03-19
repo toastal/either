@@ -15,7 +15,7 @@
   "author": "toastal",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/EntangledMedia/WebClient/issues"
+    "url": "https://github.com/toastal/either/issues"
   },
   "devDependencies": {},
   "dependencies": {
