@@ -19,7 +19,7 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "elm": "~0.19.0-bugfix1",
-    "elm-test": "^0.18.12"
+    "elm": "~0.19.0-bugfix6",
+    "elm-test": "~0.19.0"
   }
 }
