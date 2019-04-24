@@ -9,6 +9,6 @@ the `Right`—although many operations are provided for `Left` as well.
 This is similar to
 [`Result`](http://package.elm-lang.org/packages/elm-lang/core/latest/Result)
 type in
-[`core`](http://package.elm-lang.org/packages/elm-lang/core/latest)
+[`core`](http://package.elm-lang.org/packages/elm/core/latest)
 , but is more generic.  If you’re looking for a data type to do error
 handling, you should use `Result` instead.
