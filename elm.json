@@ -3,7 +3,7 @@
     "name": "toastal/either",
     "summary": "Either for representing a structure with two types",
     "license": "BSD-3-Clause",
-    "version": "3.5.1",
+    "version": "3.5.2",
     "exposed-modules": [
         "Either",
         "Either.Decode",
