@@ -1,6 +1,6 @@
 {
   "name": "either",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "A more complete Either for representing a structure with two types",
   "directories": {
     "test": "tests"
