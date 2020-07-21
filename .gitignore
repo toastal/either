@@ -2,21 +2,16 @@
 /elm-stuff
 /documentation.json
 
-
 # Node
 node_modules/
-yarn.lock
 package-lock.json
-
 
 # Logs
 /logs
 *.log
 
-
 # Editors
 *.sw[po]
-
 
 # OS generated files
 .DS_Store
