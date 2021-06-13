@@ -6,6 +6,10 @@
 node_modules/
 package-lock.json
 
+# Nix
+/result
+.direnv/
+
 # Logs
 /logs
 *.log
