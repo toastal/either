@@ -17,7 +17,7 @@ handling, you should use `Result` instead.
 
 ## Project & Community Notes
 
-This project is regrettably available on [GitHub](https://github.com/toastal/either). The Elm community has tied itself to the closed-source, Microsoft-owned code forge of GitHub for package registry and identity. This does not protect the privacy or freedom to its community members.
+This project is regrettably available on [GitHub](https://github.com/toastal/either). The Elm community has tied itself to the closed-source, Microsoft-owned code forge of GitHub for package registry and identity. This does not protect the privacy or freedom of its community members.
 
 ---
 
