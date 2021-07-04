@@ -17,6 +17,11 @@ package-lock.json
 # Editors
 *.sw[po]
 
+# NO to Microsoft
+*.code-workspace
+.github/
+.vscode/
+
 # OS generated files
 .DS_Store
 .DS_Store?

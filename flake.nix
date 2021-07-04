@@ -13,14 +13,14 @@
 
         pkgs = import nixpkgs { inherit system; };
 
-        ruby = pkgs.ruby_2_7;
-
         nodejs = pkgs.nodejs-14_x;
       in
       rec {
         inherit name;
         devShell = pkgs.mkShell {
+          inherit name;
           nativeBuildInputs = with pkgs; [
+            elmPackages.elm
             elmPackages.elm-format
             nodejs
           ];
