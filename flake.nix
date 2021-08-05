@@ -12,8 +12,6 @@
         name = "elm-either";
 
         pkgs = import nixpkgs { inherit system; };
-
-        nodejs = pkgs.nodejs-14_x;
       in
       rec {
         inherit name;
@@ -22,7 +20,6 @@
           nativeBuildInputs = with pkgs; [
             elmPackages.elm
             elmPackages.elm-format
-            nodejs
           ];
         };
       }
