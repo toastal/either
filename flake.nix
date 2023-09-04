@@ -3,25 +3,30 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        name = "elm-either";
+  outputs = { self, nixpkgs, ... }@inputs:
+    let
+      name = "elm-either";
 
-        pkgs = import nixpkgs { inherit system; };
-      in
-      rec {
-        inherit name;
-        devShell = pkgs.mkShell {
-          inherit name;
-          nativeBuildInputs = with pkgs; [
-            elmPackages.elm
-            elmPackages.elm-format
-          ];
-        };
-      }
-    );
+      forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.unix;
+
+      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
+    in
+    {
+      devShells = forAllSystems (system:
+        let pkgs = nixpkgsFor.${system}; in
+        {
+          ${name} = pkgs.mkShell {
+            inherit name;
+            buildInputs = with pkgs; [
+              nixpkgs-fmt
+              elmPackages.elm
+              elmPackages.elm-format
+            ];
+          };
+
+          default = self.devShells.${system}.${name};
+        });
+    };
 }

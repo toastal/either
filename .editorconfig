@@ -13,5 +13,5 @@ trim_trailing_whitespace = true
 charset = utf-8
 indent_size = 4
 
-[*.json]
+[*.{json,nix}]
 indent_size = 2
