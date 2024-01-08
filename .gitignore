@@ -22,6 +22,14 @@ package-lock.json
 .github/
 .vscode/
 
+# NO to Docker
+*Dockerfile*
+*docker-compose*
+
+# NO to invasive configs
+.husky/
+.pre-commit-config.{yaml,yml}
+
 # OS generated files
 .DS_Store
 .DS_Store?
