@@ -6,12 +6,21 @@
 node_modules/
 package-lock.json
 
+# Nix
+/result
+.direnv/
+
 # Logs
 /logs
 *.log
 
 # Editors
 *.sw[po]
+
+# NO to Microsoft
+*.code-workspace
+.github/
+.vscode/
 
 # OS generated files
 .DS_Store
